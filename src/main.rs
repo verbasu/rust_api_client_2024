@@ -23,22 +23,32 @@ struct RespJson {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn make_post(url: &str) -> Result<RespJson, Box<dyn std::error::Error>> {
     let mut map = HashMap::new();
     map.insert("lang", "rust");
     map.insert("body", "json");
 
     let client = Client::new();
-    let response = client
-        .post("http://httpbin.org/post")
-        .json(&map)
-        .send()
-        .await?;
+    let response = client.post(url).json(&map).send().await?;
     let result = response.json::<RespJson>().await?;
-    let data_json: DataJson = serde_json::from_str(&result.data).unwrap();
-    // let head_json: HeadJson = serde_json::from_str(&result.headers).unwrap();
+    Ok(result)
+}
+
+fn main() {
+    let url = "http://httpbin.org/post";
+    let res = make_post(url).unwrap();
+    let data_json: DataJson = serde_json::from_str(&res.data).unwrap();
     println!("{:#?}", data_json);
-    println!("{:#?}", result.headers);
-    println!("origin: {}, url: {}", result.origin, result.url);
-    Ok(())
+    println!("{:#?}", res.headers);
+    println!("origin: {}, url: {}", res.origin, res.url);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_post_form_file() {
+        let url = "http://httpbin.org/post";
+        let res = make_post(url).unwrap();
+    }
 }
