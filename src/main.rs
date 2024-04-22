@@ -3,7 +3,21 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Deserialize, Serialize)]
+struct DataJson {
+    lang: String,
+    body: String,
+}
+#[derive(Debug, Deserialize, Serialize)]
+struct HeadJson {
+    // Content\-Type: String,
+    // Content\-Length: String,
+    Accept: String,
+    Host: String,
+}
+#[derive(Debug, Deserialize, Serialize)]
 struct RespJson {
+    headers: HeadJson,
+    data: String,
     origin: String,
     url: String,
 }
@@ -21,7 +35,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .send()
         .await?;
     let result = response.json::<RespJson>().await?;
-    println!("{:#?}", result);
+    let data_json: DataJson = serde_json::from_str(&result.data).unwrap();
+    // let head_json: HeadJson = serde_json::from_str(&result.headers).unwrap();
+    println!("{:#?}", data_json);
+    println!("{:#?}", result.headers);
     println!("origin: {}, url: {}", result.origin, result.url);
     Ok(())
 }
