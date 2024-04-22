@@ -5,7 +5,7 @@ fn upload_file(url: &str) -> Result<(), Box<dyn std::error::Error>> {
     let file = File::open("Cargo.toml")?;
 
     let client = Client::new();
-    let res = client.post(url).body(file).send()?;
+    let _res = client.post(url).body(file).send()?;
 
     Ok(())
 }
