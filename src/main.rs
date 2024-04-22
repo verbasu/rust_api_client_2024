@@ -1,31 +1,27 @@
-use reqwest::blocking::Client;
-use std::fs::File;
+use reqwest::Client;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
-fn upload_file(url: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let file = File::open("Cargo.toml")?;
+#[derive(Debug, Deserialize, Serialize)]
+struct RespJson {
+    origin: String,
+    url: String,
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut map = HashMap::new();
+    map.insert("lang", "rust");
+    map.insert("body", "json");
 
     let client = Client::new();
-    let _res = client.post(url).body(file).send()?;
-
+    let response = client
+        .post("http://httpbin.org/post")
+        .json(&map)
+        .send()
+        .await?;
+    let result = response.json::<RespJson>().await?;
+    println!("{:#?}", result);
+    println!("origin: {}, url: {}", result.origin, result.url);
     Ok(())
 }
-
-fn main() {
-    let url = "https://0x0.st";
-    upload_file(url);
-}
-
-/*
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn test_post_form_file() {
-        let url = "https://0x0.st";
-        let get_json = upload_file(url).await.unwrap();
-
-        println!("Result: {:#?}", get_json);
-    }
-}
-*/
